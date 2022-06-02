@@ -14,24 +14,43 @@ infrastructural perspective see later sections.
 
 ## 01. Local Development
 
-### Prepare the repository
+### Prepare the local machine
 
 - Fork the repo to your DevOps project. 
 - Clone the repo to your local machine. 
+- Install the Azure CLI  and install the pip packages DBX and 
+- Login into Azure via 
+  ```{bash}
+  az login
+  ```
 - Create an install script to authenticate to your Azure Databricks workspace. 
   Example
   ````{bash}
   export DATABRICKS_TOKEN= 
   export DATABRICKS_HOST= 
   `````
-
-### Install the local prerequisites. 
+- Add this file to the .gitignore, to prevent credentials being added to the repo.
 
 ### Configure Databicks 
+- First go to the dev Resource group and create a pat token for the install script. (Or use other auth methods ofc)
+- Create a cluster. (For the demo, a single node cluster is sufficient)
+- Install mlflow[extras] and pyyaml on the cluster itself. That is, on the cluster install the libraries via the packages tab. 
+
+### Configure the storage account
+- Go to the storage account 
+- Create blob containers with name data 
+- Add the wine dataset csv winequality-red.csv
+```{bash}
+curl -L https://raw.githubusercontent.com/zygmuntz/wine-quality/master/winequality/winequality-red.csv -o winequality-red.csv
+```
+
 
 ### Run the code from a local machine. 
-
-
+- Test if the connection to databricks works by running the command 
+  ```{bash}
+  dbx execute --job=wine-model-train --cluster-name=<your-databricks-cluster-name>
+  ```
+- If it runs, you are in a position to run the 
 ### Push the code to Master
 
 
