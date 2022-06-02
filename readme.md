@@ -16,6 +16,15 @@ infrastructural perspective see later sections.
 
 ### Prepare the repository
 
+- Fork the repo to your DevOps project. 
+- Clone the repo to your local machine. 
+- Create an install script to authenticate to your Azure Databricks workspace. 
+  Example
+  ````{bash}
+  export DATABRICKS_TOKEN= 
+  export DATABRICKS_HOST= 
+  `````
+
 ### Install the local prerequisites. 
 
 ### Configure Databicks 
@@ -39,7 +48,8 @@ infrastructural perspective see later sections.
 
 ### Create the azure pipeline.
 
-## 02. Deploy to prod.
+
+## 03. Deploy to prod.
 
 ### Configure Databicks 
 
@@ -48,4 +58,6 @@ infrastructural perspective see later sections.
 ### Configure DevOps 
 
 ### Create the azure pipeline.
+
+### Push code to the release branch
 
