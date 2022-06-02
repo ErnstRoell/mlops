@@ -1,0 +1,138 @@
+trigger:
+  batch: true
+  branches:
+    include:
+    - '*'
+
+  tags:
+    include:
+      - v*.*
+      - prod
+
+stages:
+- stage: onPush
+  jobs:
+  - job: onPushJob
+    pool:
+      vmImage: 'ubuntu-18.04'
+    variables: 
+    - group: test-env
+
+    steps:
+    - script: env | sort
+      displayName: 'Environment / Context'
+
+    - task: UsePythonVersion@0
+      displayName: 'Use Python 3.7'
+      inputs:
+        versionSpec: 3.7
+
+    - checkout: self
+      persistCredentials: true
+      clean: true
+      displayName: 'Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)'
+    
+    - task: AzureCLI@2
+      displayName: 'Install the Azure CLI ML extension'
+      inputs:
+        azureSubscription: 'aml-sc'
+        scriptLocation: inlineScript
+        scriptType: 'bash'
+        inlineScript: 'az extension add -n azure-cli-ml'
+    
+    - script: |
+        cd wine-project
+        python -m pip install --upgrade pip
+        pip install -r unit-requirements.txt
+        pip install -e .
+      displayName: 'Install dependencies'
+
+    - script: |
+        cd wine-project
+        dbx execute --job=wine-project-train --cluster-name=$CLUSTER_NAME
+      displayName: 'Run the training'
+
+    - script: |
+        cd wine-project
+        dbx deploy --job=wine-project-batch --files-only
+      displayName: 'Deploy integration test'
+    
+    - script: |
+        cd wine-project
+        dbx launch --job=wine-project-batch --as-run-submit --trace
+      displayName: 'Deploy integration test'
+
+    - task: AzureCLI@2
+      displayName: 'Register in AML '
+      inputs:
+        azureSubscription: 'aml-sc'
+        scriptLocation: inlineScript
+        scriptType: 'bash'
+        inlineScript: |
+          mkdir model
+          d=$(mlflow artifacts download --artifact-uri models:/$MODEL/None -d model)
+          az ml model register --name $MODEL --model-path $d --resource-group $RESOURCE_GROUP --workspace-name $AML_WORKSPACE
+
+    - script: |
+        pip install azureml-sdk==1.40.0
+        python deploy.py
+      displayName: 'Deploy to Test AKS'
+
+
+- stage: Prod
+  jobs:
+  - job: BuildAndTest
+    pool:
+      vmImage: 'ubuntu-18.04'
+    variables: 
+    - group: prod-env
+
+    steps:
+    - script: env | sort
+      displayName: 'Environment / Context'
+
+    - task: UsePythonVersion@0
+      displayName: 'Use Python 3.7'
+      inputs:
+        versionSpec: 3.7
+
+    - checkout: self
+      persistCredentials: true
+      clean: true
+      displayName: 'Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)'
+    
+    - task: AzureCLI@2
+      displayName: 'Install the Azure CLI ML extension'
+      inputs:
+        azureSubscription: 'aml-sc'
+        scriptLocation: inlineScript
+        scriptType: 'bash'
+        inlineScript: 'az extension add -n azure-cli-ml'
+    
+    - script: |
+        cd wine-project
+        python -m pip install --upgrade pip
+        pip install -r unit-requirements.txt
+        pip install -e .
+      displayName: 'Install dependencies'
+
+    - script: |
+        cd wine-project
+        dbx execute --job=wine-project-train --cluster-name=$CLUSTER_NAME
+      displayName: 'Run the training'
+
+    - task: AzureCLI@2
+      displayName: 'Register in AML '
+      inputs:
+        azureSubscription: 'aml-sc'
+        scriptLocation: inlineScript
+        scriptType: 'bash'
+        inlineScript: |
+          mkdir model
+          d=$(mlflow artifacts download --artifact-uri models:/$MODEL/None -d model)
+          az ml model register --name $MODEL --model-path $d --resource-group $RESOURCE_GROUP --workspace-name $AML_WORKSPACE
+
+    - script: |
+        pip install azureml-sdk==1.40.0
+        python deploy.py
+      displayName: 'Deploy to Test AKS'

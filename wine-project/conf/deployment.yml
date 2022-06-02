@@ -1,0 +1,39 @@
+custom:
+  basic-cluster-props: &basic-cluster-props
+    spark_version: "9.1.x-cpu-ml-scala2.12"
+
+  basic-static-cluster: &basic-static-cluster
+    new_cluster:
+      <<: *basic-cluster-props
+      num_workers: 1
+      node_type_id: "Standard_E8_v3"
+
+# please note that we're using FUSE reference for config file, hence we're going to load this file using its local FS path
+environments:
+  default:
+    strict_path_adjustment_policy: true
+    jobs:
+      - name: "wine-project-sample"
+        <<:
+          - *basic-static-cluster
+        spark_python_task:
+          python_file: "file://wine_project/jobs/sample/entrypoint.py"
+          parameters: ["--conf-file", "file:fuse://conf/test/sample.yml"]
+      - name: "wine-project-train"
+        <<:
+          - *basic-static-cluster
+        spark_python_task:
+          python_file: "file://wine_project/jobs/train/entrypoint.py"
+          parameters: ["--conf-file", "file:fuse://conf/test/sample.yml"]
+      - name: "wine-project-batch"
+        <<:
+          - *basic-static-cluster
+        spark_python_task:
+          python_file: "file://wine_project/jobs/batch/entrypoint.py"
+          parameters: ["--conf-file", "file:fuse://conf/test/sample.yml"]
+      - name: "wine-project-sample-integration-test"
+        <<:
+          - *basic-static-cluster
+        spark_python_task:
+          python_file: "file://tests/integration/sample_test.py"
+          parameters: ["--conf-file", "file:fuse://conf/test/sample.yml"]

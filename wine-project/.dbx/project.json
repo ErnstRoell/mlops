@@ -1,0 +1,9 @@
+{
+    "environments": {
+        "default": {
+            "profile": "DEFAULT",
+            "workspace_dir": "/Shared/dbx/wine_project",
+            "artifact_location": "dbfs:/Shared/dbx/projects/wine_project"
+        }
+    }
+}

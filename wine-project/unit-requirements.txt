@@ -1,0 +1,12 @@
+setuptools
+wheel
+pyspark==3.1.2
+pyyaml
+pytest
+pytest-cov
+dbx
+pyyaml
+mlflow
+scikit-learn==0.24.1
+azureml-sdk
+os
