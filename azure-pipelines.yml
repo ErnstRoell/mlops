@@ -49,7 +49,7 @@ stages:
 
     - script: |
         cd wine-project
-        dbx execute --job=wine-project-train --cluster-name=$CLUSTER_NAME
+        dbx execute --job=wine-project-train --cluster-name=$DATABRICKS_CLUSTER
       displayName: 'Run the training'
 
     - script: |
@@ -71,7 +71,7 @@ stages:
         inlineScript: |
           mkdir model
           d=$(mlflow artifacts download --artifact-uri models:/$MODEL/None -d model)
-          az ml model register --name $MODEL --model-path $d --resource-group $RESOURCE_GROUP --workspace-name $AML_WORKSPACE
+          az ml model register --name $MODEL --model-path $d --resource-group $RESOURCE_GROUP --workspace-name $AML_WORKSPACE_NAME
 
     - script: |
         pip install azureml-sdk==1.40.0
@@ -118,7 +118,7 @@ stages:
 
     - script: |
         cd wine-project
-        dbx execute --job=wine-project-train --cluster-name=$CLUSTER_NAME
+        dbx execute --job=wine-project-train --cluster-name=$DATABRICKS_CLUSTER
       displayName: 'Run the training'
 
     - task: AzureCLI@2
@@ -130,7 +130,7 @@ stages:
         inlineScript: |
           mkdir model
           d=$(mlflow artifacts download --artifact-uri models:/$MODEL/None -d model)
-          az ml model register --name $MODEL --model-path $d --resource-group $RESOURCE_GROUP --workspace-name $AML_WORKSPACE
+          az ml model register --name $MODEL --model-path $d --resource-group $RESOURCE_GROUP --workspace-name $AML_WORKSPACE_NAME
 
     - script: |
         pip install azureml-sdk==1.40.0
