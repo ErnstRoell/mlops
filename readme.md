@@ -108,15 +108,14 @@ the code to a devops pipeline, configure devops to deploy to test and run the co
 
 ## 03. Deploy to prod.
 
-This stage is an exact replication of the deployment to test, with the difference That
+This stage is an exact replication of the deployment to test, with the following differences.
 
 ### Configure Databricks
-- In the Prod workspace create an azure keyvault backed secret scope. 
+- In the Prod workspace create an azure keyvault backed secret scope.
 - This can be done by creating 
+- Call the secret scope cmr and prefix the secrets with cmr. (See docs.)
 
 ### Configure and run the azure pipeline
-
-
 Create a new library called prod-env with the same set of env variables pointing 
 to the prod resources. 
   
@@ -133,6 +132,13 @@ to the prod resources.
   ```
 - Note that in this case we link to the Databricks CMR to log the model. 
 
-
-### Push code to the release branch
-
+### Push code to the release branch [OPTIONAL]
+- If you would like to add the prod part to a release branch, add a filter on the stage part for filtering.
+- See the azure-pipelines.yaml in wine-project folder for an example.
+```{yaml}
+  condition: |
+    or(
+      startsWith(variables['Build.SourceBranch'], 'refs/heads/releases'),
+      startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+    )
+```
