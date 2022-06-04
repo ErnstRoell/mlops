@@ -1,10 +1,19 @@
 # MlOps with Databicks
 
-## Infrastructure 
-The following infrastructure should be first be put in place. 
-- Resource Group (DEV/TEST/Prod)
-  - 
+## Infrastructure prerequisites
 
+The following infrastructure should be first be put in place. 
+  - Four resource groups, 3 for dev/test/prod and one for the cmr
+  - In the cmr resource group, add a databricks workspace and a keyvautl
+  - In each of the other workpaces, the following should be added:
+    - A databricks workspace
+    - A Azure machine learning workspace
+    - A Storage account
+
+The following RBAC roles should be configured: 
+  - The user should have contributor rights on the resource groups.
+  - The user should have admin rights in the DevOps repository, as you need to configure 
+    the service connections.
 
 ## Process
 
